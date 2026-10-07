@@ -1,0 +1,11 @@
+{
+  "appId": "dev.meiti.export.tablerosnorte_muugzt8s",
+  "appName": "TablerosNorte",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "webContentsDebuggingEnabled": false
+  }
+}

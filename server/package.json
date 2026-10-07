@@ -1,0 +1,15 @@
+{
+  "name": "tablerosnorte-muugzt8s-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "cors": "^2.8.6",
+    "sqlite3": "^6.0.1",
+    "resend": "^4.0.0"
+  }
+}

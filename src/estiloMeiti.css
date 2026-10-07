@@ -1,0 +1,954 @@
+/* ============================================================================
+   🏛️ [MEITI STYLE 2026-08-12] Archivo aparte, pedido explícito del usuario: en vez de repetir el
+   mismo puñado de clases de Tailwind en cada componente que necesita el mismo look, los patrones
+   visuales que se repiten entre pantallas se definen ACÁ una sola vez — cambiar el estilo más
+   adelante es editar este archivo, nunca cazar copias sueltas por todo el código. Se arranca chico
+   (un solo patrón) y se va sumando de a poco, nunca migrando todo de golpe. Separado de index.css
+   a propósito: index.css es la base de Vite/Tailwind + ajustes puntuales del Core; este archivo es
+   el vocabulario visual propio de MEITI, pensado para crecer con el tiempo.
+   ============================================================================ */
+
+/* 🎨 Ícono + nombre de una app/entidad, en una fila — primer uso real: EncabezadoAppLista en
+   MisApps.jsx (arriba de cada tarjeta de app). El ícono es el MISMO SVG que arma el color propio de
+   cada app para su instalador nativo (construirSvgIcono en src/backend/iconosAppsData.js) — el
+   color ya viene metido en el propio SVG (fill del cuadrado de fondo), acá solo se define el
+   tamaño. ".meiti-encabezado-apagado" (estado "sin actividad todavía", ej. una app generándose)
+   des-satura y aclara el ícono en vez de recolorearlo — mismo criterio que ya usa el resto del
+   proyecto (opacidad + gris), pero sin pisar el color real de la app. */
+.meiti-encabezado-app {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+.meiti-encabezado-app .meiti-encabezado-icono {
+  display: inline-flex;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+}
+.meiti-encabezado-app .meiti-encabezado-icono svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.meiti-encabezado-app .meiti-encabezado-nombre {
+  font-weight: 500;
+  color: var(--color-texto, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 🩹 [2026-08-17] "text-overflow: ellipsis" NO funciona en un hijo de flex sin esto: por
+     defecto un item flex no se encoge por debajo del ancho de su contenido (min-width: auto),
+     así que en vez de recortar el título, empujaba lo que viniera al lado — y desde que este
+     encabezado lleva la etiqueta "En desarrollo" a la derecha, un nombre largo la sacaba de
+     vista. Con min-width: 0 el nombre recorta y la etiqueta siempre se ve. */
+  min-width: 0;
+}
+.meiti-encabezado-app.meiti-encabezado-apagado .meiti-encabezado-icono {
+  filter: grayscale(1) opacity(0.5);
+}
+.meiti-encabezado-app.meiti-encabezado-apagado .meiti-encabezado-nombre {
+  color: var(--color-texto-suave, #64748b);
+}
+
+/* 🎨 Tarjeta de acciones con un tinte sutil del mismo color que su ícono de arriba — pedido
+   explícito del usuario: "para que se alinee todo". Lee la variable --meiti-color-app que cada card
+   define inline (mismo color ya resuelto que usa el ícono, ver EncabezadoAppLista/resolverColorIcono
+   en MisApps.jsx) — nunca un color fijo acá, es genuinamente el color de cada app. color-mix()
+   diluye ese color contra blanco para el fondo (6%) y contra el gris neutro de siempre para el
+   borde (20%), tenue a propósito — el protagonismo lo sigue teniendo el contenido de la card, esto
+   es solo un guiño de identidad. */
+.meiti-tarjeta-app {
+  /* 🌗 [2026-08-26] Mezcla contra la SUPERFICIE del modo, no contra blanco literal: de día es el
+     mismo resultado de siempre, de noche el tinte de identidad se posa sobre la tarjeta oscura. */
+  background-color: color-mix(in srgb, var(--meiti-color-app) 6%, var(--color-superficie, white));
+  border: 1px solid color-mix(in srgb, var(--meiti-color-app) 22%, var(--color-borde-suave, #e2e8f0));
+}
+
+/* 📄 [ENCABEZADO DE PÁGINA 2026-08-12] Título + descripción de página pública, SIN línea
+   divisoria — pedido explícito del usuario tras notar que Herramientas Dev/Lego Panel tenían un
+   estilo de página distinto al resto (línea horizontal ancha bajo un título corto, contenedor más
+   ancho). El patrón correcto es el que ya usan Marketplace/Créditos/Guías/Servicios/Mis apps: sin
+   separador, contenedor angosto centrado (ver .meiti-contenedor-pagina abajo). Definido acá para
+   que páginas nuevas lo hereden en vez de repetir el mismo puñado de clases Tailwind. */
+/* 🩹 [CREAR APP 2026-08-15] Único caso con un h2 en vez de h1 acá adentro — LandingWizard.jsx ya
+   tiene su propio h1 sr-only fijo para SEO ("H1 único y estable", ver comentario ahí), así que su
+   título visible de página tiene que bajar a h2 para no duplicar el h1 real del documento. Mismo
+   estilo, cualquiera de los dos niveles. */
+.meiti-header-pagina h1,
+.meiti-header-pagina h2 {
+  /* 📏 [TAMAÑO UNIFICADO 2026-08-15, pedido explícito del usuario: "bajale 1 punto a mis apps
+     encabezado y ese mismo tamano que quede aplicaselo a los demas encabezados"] 1.5rem (text-2xl)
+     bajó un escalón a 1.25rem (text-xl) — mismo tamaño ahora en TODAS las páginas que usan este
+     patrón (Mis apps/Créditos/Marketplace/Servicios/Guías/Herramientas/Lego Panel público). */
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-texto, #0f172a);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+/* 🔤 [TIPOGRAFÍA DE TÍTULOS 2026-08-13, pedido explícito del usuario: "los textos... están como
+   genéricos, les falta nitidez"] "Space Grotesk" (--font-display) ya estaba cargado en index.css
+   desde el arranque del proyecto pero nunca se usaba en ningún componente — todo el sitio (títulos
+   y texto normal) caía en la misma "Plus Jakarta Sans" al mismo peso, sin ningún contraste entre
+   jerarquías, que es justo lo que se siente "genérico". Acá se activa donde más se nota: los
+   títulos grandes. Nunca en texto de body/párrafos — ese sigue en Plus Jakarta Sans, la mezcla de
+   las dos es la que da personalidad (un solo tipo de letra en todo, aunque sea "linda", sigue
+   siendo plano).
+   Alcance de hoy, a propósito: SOLO el sitio propio de MEITI (Core admin vía ".meiti-panel-
+   arquitecto h1", páginas públicas vía ".meiti-header-pagina h1" ya existente arriba, y títulos
+   "hero" sueltos marcados a mano con ".meiti-titulo"). Nunca las apps generadas — esas tienen su
+   propio mecanismo de estilo (kitUI.jsx + el prompt de estilos que lee la IA en
+   src/backend/estilos/) y extenderlo ahí es una tarea aparte, ver conversación. */
+.meiti-header-pagina h1,
+.meiti-header-pagina h2,
+.meiti-panel-arquitecto h1,
+.meiti-titulo {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.meiti-header-pagina p {
+  font-size: 0.875rem;
+  color: var(--color-texto-suave, #64748b);
+  margin-bottom: 2rem;
+}
+
+/* 📄 Contenedor estándar de página pública — mismo ancho/padding que ya usan todas las páginas del
+   sitio salvo Herramientas Dev/Lego Panel (que tenían max-w-6xl sin motivo real: su contenido son
+   cards/tablas que ya reflowean solas, no necesitan más ancho que el resto). */
+.meiti-contenedor-pagina {
+  max-width: 48rem; /* max-w-3xl */
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-bottom: 4rem;
+  /* 🩹 [BUG REAL 2026-08-16, pedido explícito del usuario: "quita el espacio que esta entre la
+     card de usuario y el top... que quede en la misma linea del icono de las tres rayitas en
+     todas las paginas vista pc"] Era 2.5rem (40px) — sumado al spacer compartido de 56px que
+     PublicNav.jsx reservaba en desktop (ver comentario "ESPACIO SUPERIOR UNIFICADO" ahí, ya
+     sacado), el avatar de CardPerfilSesion quedaba centrado ~112px desde arriba contra los
+     ~32px del ícono de colapsar/expandir el sidebar (h-16 = 64px, centrado en 32px). 1rem (16px)
+     deja el centro del avatar en ~32px, alineado con ese ícono — medido en vivo con
+     getBoundingClientRect en Mis Apps/wizard. */
+  padding-top: 1rem;
+}
+
+/* 🎨 [INPUT VIVO 2026-08-13, pedido explícito del usuario: "algún efecto al input del asistente
+   que parezca vivo cuando esté en foco"] Glow violeta que respira (pulso de intensidad, no de
+   tamaño). Se aplica al WRAPPER del "input flotante" compartido (".meiti-header-pagina"-style,
+   ver el comentario "ESTILO ÚNICO DE CHAT" repetido en LandingWizard/LegoPanel/BotonSoporte/
+   IndustrialWizard/Servicios/EditorConClaude/MisApps) — ahí vive el borde visible, nunca en el
+   <textarea> interno (que va sin borde propio, "outline-none"), por eso ":focus-within" y no
+   ":focus". Pensado para sensación de "IA escuchando" en cualquier chat con IA del sitio. */
+@keyframes meiti-input-vivo-pulso {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15), 0 0 10px rgba(139, 92, 246, 0.2); }
+  50% { box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3), 0 0 18px rgba(139, 92, 246, 0.45); }
+}
+.meiti-input-vivo:focus-within {
+  border-color: rgb(167 139 250); /* violet-400 */
+  animation: meiti-input-vivo-pulso 1.8s ease-in-out infinite;
+}
+
+/* 🎨 [INPUT VIVO — ESPERA 2026-08-15, pedido explícito del usuario: "captar la atención al campo
+   cuando el usuario cae a esa página, sin usar autofocus" (autofocus se descartó porque abre el
+   teclado solo en mobile y hace saltar el scroll)] Mismo glow que ":focus-within" de arriba pero
+   MÁS lento y MÁS tenue — se nota sin gritar, y como es una clase aparte (no ":focus-within")
+   funciona ANTES de que el usuario toque el campo. El componente la aplica solo unos segundos al
+   montar la fase y la saca apenas hay foco/tecleo — nunca se solapan las dos animaciones, porque
+   ésta se apaga justo cuando la de foco se prendería. */
+@keyframes meiti-input-vivo-espera-pulso {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1), 0 0 6px rgba(139, 92, 246, 0.12); }
+  50% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22), 0 0 14px rgba(139, 92, 246, 0.3); }
+}
+.meiti-input-vivo--espera {
+  animation: meiti-input-vivo-espera-pulso 2.4s ease-in-out infinite;
+}
+
+/* 🎨 [KIT UI 2026-08-14, pedido explícito del usuario: "sigue con kit ui agregar estilos que
+   agregamos en meiti ayer"] Misma sensación de "vivo" que el input del asistente de arriba, pero
+   coloreada con el "tema" real de cada app en vez de fija en violeta — kitUI.jsx (UI.Campo) deriva
+   TODO color de "tema.*", nunca un color fijo de MEITI metido en la app de otro (misma regla que
+   ya sigue .meiti-forja-hex, ver más abajo). El color viaja por 4 variables CSS que kitUI.jsx
+   setea inline con "colorPrimario" + canal alfa (mismo patrón "hex+alfa" que ya usa todo el kit).
+   A diferencia del input del asistente (wrapper sin borde propio en el <textarea>), acá el glow
+   se aplica directo sobre el input/select/textarea real de UI.Campo. */
+/* 🌗 [SISTEMA VISUAL 2026-08-26] Acá corría "meiti-campo-vivo-pulso 1.8s infinite": el campo
+   enfocado latía SIN PARAR mientras la persona escribía. En el input del asistente eso es una
+   firma buscada (ver .meiti-input-vivo arriba — un campo suelto, pedido explícitamente), pero en
+   un formulario de una app generada —cinco o seis campos, uno detrás de otro— es ruido justo en el
+   momento en que se necesita calma. Ningún sistema de diseño profesional anima el foco sin fin.
+   Queda un anillo QUIETO, con el color real del tema de cada app (las mismas variables que ya
+   setea kitUI.jsx inline), que es lo que el foco tiene que hacer: decir dónde estás parado. */
+.meiti-campo-vivo:focus {
+  box-shadow: 0 0 0 3px var(--meiti-glow-a-fuerte, rgba(139,92,246,0.3));
+  transition: box-shadow 0.15s ease;
+}
+
+/* 🎨 [ANIMACIÓN "FORJA" 2026-08-10, migrada desde index.css el 2026-08-13 pedido explícito del
+   usuario] Firma visual de MEITI para cualquier estado de espera dentro de una app generada — un
+   hexágono (el "molde") pulsando. Coloreado con el tema real de la app (nunca un color fijo de
+   MEITI metido en la app de otro) — la parte de color se resuelve inline en el JSX que la usa
+   (MotorUI.jsx). */
+@keyframes meiti-forja-pulso {
+  0%, 100% { transform: scale(0.55); opacity: 0.45; }
+  50% { transform: scale(1); opacity: 1; }
+}
+.meiti-forja-hex {
+  animation: meiti-forja-pulso 1.6s ease-in-out infinite;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* 🔷 [BOTÓN SOPORTE 2026-08-10, pedido explícito del usuario: "en vez de un círculo no puede ser
+   un pentágono?", migrada desde index.css el 2026-08-13] Firma visual propia en vez del círculo
+   genérico — coincide además con el nombre del propio sistema de puntaje de MEITI ("Pentágono").
+   Pentágono clásico, punta arriba. Usada en BotonSoporte.jsx. */
+.meiti-boton-pentagono {
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+/* 💬 [MODO CHAT — SOLO MOBILE 2026-08-15, pedido explícito del usuario: "vamos a pegar al fondo
+   el input del chat en esos lugares donde solo es chat que quitamos todo lo demás, llamemosle
+   modo chat para definirlo en meiti.css"] Reglas compartidas por la fase 'chat' de
+   LandingWizard.jsx e IndustrialWizard.jsx — definidas UNA sola vez acá a propósito: duplicar
+   estas mismas clases como strings de Tailwind sueltos en cada archivo ya causó drift real entre
+   los dos wizards varias veces en esta misma sesión (header/card no ocultos igual, cajas de alto
+   distinto, etc.). Solo actúan por debajo de 640px (mismo breakpoint "sm" de Tailwind) — arriba de
+   eso el wizard sigue con su layout normal de siempre, sin cambios (mecanismo "POSICIÓN 100%
+   FIJA" documentado en LandingWizard.jsx, que sigue intacto en desktop/tablet).
+
+   Las 4 piezas del "modo chat": (1) la card de sesión y el título de página se ocultan apenas se
+   sale de la fase 'inicio' — más alto de pantalla para los mensajes; (2) el área de mensajes pasa
+   de una caja chica de 128px a ocupar la mayor parte del alto real de la pantalla; (3) el input
+   queda pegado del todo abajo (position:sticky sin gap) — junto con el meta viewport
+   "interactive-widget=resizes-content" (index.html), cuando el teclado virtual abre el viewport
+   se achica de verdad, así que el input sube pegado al teclado en vez de quedar tapado atrás,
+   igual que cualquier chat normal; (4) el espaciador de 123px (que solo existe para igualar el
+   alto contra la fase 'inicio' en desktop) se oculta, ya no tiene sentido con el header oculto.
+
+   🩹 [BUG REAL 2026-09-01, reportado por el usuario: en Herramientas Dev, con Editor con IA
+   activo, la fila de pestañas de arriba (Biblioteca/Ladrillos/Editor con IA/Tablero/...) se veía
+   apilada en vez de horizontal, en PC] Esta clase se sumó tal cual a esa fila (HerramientasDev.jsx,
+   ver ".meiti-fila-deslizable" ahí) sin notar que acá arriba tenía "display: block" como base —
+   inofensivo en un <div>/<p> (ya son block por default, que es todo lo que usan LandingWizard,
+   IndustrialWizard y PublicNav), pero esa fila es "display:flex" (Tailwind ".flex"): con la misma
+   especificidad, la regla que carga después gana, y "block" pisaba el flex y hacía que los botones
+   cayeran a su flujo de texto normal (envolviendo en líneas) en vez de quedarse en una sola fila
+   que desliza. Estaba latente desde que se sumó al primer <div>/<p> — nunca se notó porque nada
+   ponía "enModoChat" en true estando en PC hasta este componente nuevo. El comentario de arriba ya
+   documentaba la regla real ("arriba de 640px sigue con su layout normal, sin cambios"): el "block"
+   la contradecía a sí mismo. Se saca la base entera — un <div>/<p> normal no pierde nada al no
+   declarar "display" (ya es block por su cuenta), y el flex deja de romperse. */
+/* El valor de desktop es una variable con fallback 76px (el de los wizards) — LegoPanel.jsx tiene
+   su propio alto de desktop distinto (260px, pensado para una página CON cabecera propia) y lo
+   pisa vía "style" inline con "--meiti-chat-mensajes-alto-desktop", sin necesitar una clase
+   aparte. El alto de mobile es el MISMO para todos los usos — ahí es donde importa la consistencia
+   real. */
+.meiti-chat-mensajes {
+  height: var(--meiti-chat-mensajes-alto-desktop, 76px);
+}
+.meiti-chat-input-pegado {
+  position: static;
+}
+.meiti-chat-espaciador-oculto {
+  display: block;
+}
+.meiti-chat-fase-padding {
+  padding-bottom: 4rem; /* mismo valor que "pb-16" de Tailwind, para desktop/tablet */
+}
+@media (max-width: 639px) {
+  .meiti-chat-header-oculto {
+    display: none;
+  }
+  /* 📱 [2026-08-18, pedido del usuario mostrando como referencia el chat que estaba usando:
+     "el chat esta pegado literalmente al teclado virtual del telefono y todo se mueve detras del
+     campo de entrada sin que se vea un scroll aparente"] Acá decía "height: min(60dvh, 480px)", o
+     sea: en el teléfono los mensajes vivían en una CAJA CON SU PROPIO SCROLL, metida adentro de una
+     página que también scrollea. Dos scrolls encimados. Eso no lo hace ningún chat de teléfono, y
+     se nota: aparece una barrita interna, el gesto de arrastrar a veces mueve la caja y a veces la
+     página, y la conversación queda espiada por una ventanita en vez de ocupar la pantalla.
+     Ahora en teléfono la caja deja de scrollear y de tener alto fijo: los mensajes son parte de la
+     página y scrollea la página, que es la única que sigue al teclado virtual. El campo de escribir
+     ya era "sticky bottom:0" (abajo), así que queda pegado al teclado y la conversación le pasa por
+     detrás — exactamente lo pedido.
+     ⚠️ El auto-scroll se acomoda solo: useModoChatAutoScroll busca la primera caja que scrollea
+     hacia arriba, y al dejar esta en "visible" encuentra el <main> de PublicNav, que es el que
+     scrollea de verdad en teléfono. Por eso importa que acá diga "visible" y no solo "height:auto".
+     En desktop no cambia nada: la caja con su alto propio sigue igual (ver la regla de arriba). */
+  .meiti-chat-mensajes {
+    height: auto;
+    /* Ocupa lo que sobra de pantalla aunque haya un solo mensaje, para que el campo de escribir
+       arranque abajo de todo y no a media altura. "mt-auto" (en el JSX) empuja los mensajes contra
+       el campo, así que el hueco que sobra queda ARRIBA, igual que en cualquier chat. */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: visible;
+  }
+  .meiti-chat-columna {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .meiti-chat-input-pegado {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+  }
+  .meiti-chat-espaciador-oculto {
+    display: none;
+  }
+  .meiti-chat-fase-padding {
+    padding-bottom: 0;
+  }
+}
+
+/* 📱 [BUG REAL 2026-08-18, medido en vivo en 375px: el botón de acción llegaba a x=351 y el
+   de Soporte arranca en x=327 — 24px de superposición] El botón de Soporte es "fixed" abajo a la
+   derecha, así que se dibuja ENCIMA de cualquier cosa que llegue al fondo de la pantalla. En
+   desktop no molesta (el contenido va en una columna centrada de max-w-3xl y el botón queda lejos,
+   contra el borde), pero en teléfono el contenido ocupa todo el ancho y el último botón de la
+   página le queda justo debajo — tapado a medias, que es peor que tapado del todo porque parece
+   apretable y no lo es.
+   Se volvió visible siempre al hacer que la pantalla de revisión baje sola hasta el fondo, pero
+   existía desde antes en cualquier página que se scrollee hasta abajo.
+   Vive acá y no como clases sueltas en cada archivo por la misma razón de siempre: el alto del
+   botón flotante se decide en un solo lugar, y si algún día cambia, esto lo sigue. */
+.meiti-espacio-boton-flotante {
+  padding-bottom: 0;
+}
+@media (max-width: 639px) {
+  .meiti-espacio-boton-flotante {
+    padding-bottom: 6rem; /* 96px: el botón mide 56px más ~20px de margen inferior, sobra un poco */
+  }
+}
+
+/* 🏷️ [2026-08-18, pedido del usuario: "los tags en caso de pc siempre visibles, en caso de
+   teléfono solo antes de clickear para escribir"] En una pantalla de teléfono los ejemplos y el
+   teclado virtual no entran juntos: apenas se toca el campo, los tags dejan de ser una ayuda y
+   pasan a ser lo que le come el lugar a la conversación. En desktop no hay teclado que tape nada,
+   así que quedan siempre — por eso la regla vive dentro del media query y no en la clase base. */
+@media (max-width: 639px) {
+  .meiti-chat-ejemplos-al-escribir {
+    display: none;
+  }
+}
+
+/* 🏷️ [2026-08-18] Los tags de ejemplo, en UNA fila que se desliza con el dedo o con la rueda
+   — el patrón de sugerencias de cualquier app moderna.
+   Nació como arreglo de teléfono: apilados en cinco filas se comían media pantalla y encima se
+   salían por abajo. Pero al verlo funcionando quedó mejor en las dos resoluciones (pedido explícito
+   del usuario: "los tags asi en scroll deslisable horizonal estan mucho mejor, unifica ese estilo
+   para todo telefono y pc"), así que la regla sale del media query y vale siempre: una sola fila,
+   alto constante, y el bloque de abajo nunca cambia de tamaño según cuántos tags haya — que es
+   justo lo que hacía que el campo de escribir se corriera de lugar.
+   Sin barra de scroll a la vista, a propósito: la fila se corta a media pieza en el borde, y eso
+   ya avisa que sigue. */
+/* 🔁 [2026-08-19, pedido del usuario: "en Herramientas Dev vamos a poner las etiquetas en un
+   slide como las del chat, para tener el mismo espacio en todas las páginas de cada herramienta"]
+   La clase pasó de llamarse ".meiti-chat-tags" a ".meiti-fila-deslizable": ya no es del chat. Lo
+   que describe no es "etiquetas de ejemplo" sino un COMPORTAMIENTO — una fila que se desliza en vez
+   de apilarse — y sirve igual para las pestañas de herramientas.
+   El motivo de fondo es el mismo en los dos lados: apiladas, el bloque cambia de alto según cuántos
+   elementos haya (en Herramientas, según qué herramientas tenga habilitadas cada dev), y todo lo de
+   abajo se corre de lugar de una página a otra. En una sola fila el alto es constante. */
+.meiti-fila-deslizable {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  /* 🎯 [2026-08-20, reporte del usuario: "las cards necesitan un justify o un center"] Estaba en
+     "flex-start", así que cuando el contenido ENTRABA en pantalla quedaba pegado a la izquierda con
+     todo el aire a la derecha — se nota sobre todo en PC, que es donde sobra ancho.
+     "safe center" y no "center" a secas: centrar de la forma común tiene un problema viejo y
+     conocido — cuando el contenido DESBORDA, lo que se sale por la izquierda queda en una zona que
+     el scroll no alcanza, o sea etiquetas inalcanzables. La palabra "safe" le dice al navegador
+     "centrá mientras entre; si no entra, alinea al principio". Un solo valor cubre los dos casos. */
+  justify-content: safe center;
+  max-width: 100%;
+  /* ⬆️ [2026-08-20, reportado por el usuario: "cuando animan se esconde la parte de arriba detrás
+     del título"] "overflow-x: auto" NO recorta solo en horizontal: el navegador también recorta lo
+     que se sale por arriba y por abajo. Así que todo lo que se MUEVA hacia afuera se corta — la
+     entrada animada de las tarjetas, el "hover" que las levanta 4px, y la sombra que proyectan.
+     Este respiro arriba y abajo es el lugar donde ese movimiento cabe. No es estético: sin él, la
+     animación que acabamos de agregar se ve cortada contra el título de la vitrina.
+     Va en la clase compartida, así que lo heredan las tres filas (etiquetas del chat, vitrina de
+     apps y pestañas de Herramientas). */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.meiti-fila-deslizable::-webkit-scrollbar { display: none; }
+.meiti-fila-deslizable > * { flex: 0 0 auto; }
+
+/* ⌨️ [TECLADO ABIERTO 2026-08-19, pedido del usuario] Mientras se escribe en un chat, el <body>
+   lleva "meiti-escribiendo" (ver useAvisoEscribiendo en ChatMeiti.jsx). Es el único canal que
+   tienen el chat y el botón de soporte para hablarse: el botón se monta una sola vez para todo el
+   sitio (App.tsx), del otro lado del árbol de componentes.
+
+   Con el teclado abierto ese botón queda justo encima del campo de escribir y tapa lo que la
+   persona está tipeando. Se repliega contra el borde derecho dejando un asomo — el pedido fue
+   explícito en que NO desaparezca ("deja solo el indicio de que sigue ahí"): si se fuera del todo,
+   alguien que lo estaba por tocar creería que se rompió algo. Vuelve solo al cerrar el teclado.
+   Solo teléfono: en desktop no hay teclado que tape nada. */
+/* 🎧 El circulito de soporte dentro del campo del chat nace escondido: en PC no existe nunca (ahí
+   el pentágono flotante queda normal), y en teléfono lo enciende la media query de abajo solo si
+   la página tiene soporte de verdad. */
+.meiti-soporte-circulo {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  /* "body ." y no solo la clase: así gana contra el "bottom-5" de Tailwind sin necesitar
+     !important, que después es imposible de pisar si alguien lo necesita. */
+  body .meiti-soporte-flotante {
+    transition: transform 0.2s ease, opacity 0.2s ease, bottom 0.2s ease;
+    /* ⬇️ [2026-08-26, pedido del usuario: "bájalo, que antes lo subimos porque molestaba el botón
+       de enviar"] Acá vivía un bottom: calc(0.25rem + var(--meiti-alto-barra-chat)) que levantaba
+       el botón por encima de la barra del chat — existía SOLO porque el botón estaba a la derecha,
+       en la misma esquina que el de enviar. Mudado al borde izquierdo (2026-08-26), ese conflicto
+       no existe más: vuelve abajo de todo (el bottom-5 de Tailwind, sin override). */
+  }
+  /* 📖 [2026-08-26, pedido del usuario: "en la vista teléfono quita el ícono de soporte en el modo
+     de leer"] Con una conversación andando (ver "meiti-conversando" en ChatMeiti.jsx), la pantalla
+     del teléfono es toda mensajes: el botón solo tapa texto. Se esconde ahí, y vuelve solo al
+     salir del chat. Solo teléfono — en desktop hay lugar de sobra y sigue siempre visible. */
+  body.meiti-conversando .meiti-soporte-flotante {
+    display: none;
+  }
+
+  /* 🎧 [2026-08-26, pedido del usuario: "en modo teléfono pon solo el ícono al lado del de ayuda
+     en un pequeño circulito igual, y en PC déjalo normal como está"] En teléfono, en una pantalla
+     con chat, el pentágono no tiene dónde vivir sin pisar algo — su lugar pasa a ser el circulito
+     DENTRO del campo (meiti-soporte-circulo, ChatMeiti.jsx). Acá se esconde solo el BOTÓN, nunca
+     el contenedor: el panel que se abre desde el circulito vive en ese mismo contenedor. */
+  body.meiti-chat-en-pantalla .meiti-soporte-boton {
+    display: none;
+  }
+  /* El circulito existe solo si esta página tiene soporte de verdad (meiti-hay-soporte, la
+     estampa BotonSoporte al montarse) — en una pantalla sin soporte no abre nada, así que no se
+     dibuja. */
+  body.meiti-hay-soporte .meiti-soporte-circulo {
+    display: flex;
+  }
+  /* Y en modo de leer se va, igual que el flotante: la pantalla es toda mensajes. Va DESPUÉS de
+     la regla de arriba a propósito — misma especificidad, gana la última. */
+  body.meiti-conversando .meiti-soporte-circulo {
+    display: none;
+  }
+  body.meiti-escribiendo .meiti-soporte-flotante {
+    /* ⬅️ [2026-08-26] El botón vive ahora en el borde IZQUIERDO (ver BotonSoporte.jsx), así que
+       el repliegue al escribir va hacia ese lado: negativo. */
+    transform: translateX(-62%);
+    opacity: 0.55;
+  }
+}
+
+/* 📏 [2026-08-19 → 2026-08-26] Acá vivía el descuento del techo de la ventana de soporte
+   (max-height: calc(75vh - var(--meiti-alto-barra-chat))): compensaba que el botón arrancara
+   levantado sobre la barra del chat. Con el botón de vuelta abajo de todo (ver el bloque de
+   arriba), el descuento sobraba — la ventana usa su max-h-[75vh] de Tailwind, como siempre. */
+
+/* 🧠 [2026-08-19, pedido del usuario: "podés animar el icono del chat cuando está escribiendo"]
+   Mientras el asistente piensa, su ícono late y el halo alrededor se expande. Los tres puntitos ya
+   decían "está escribiendo", pero viven al costado; el que la persona mira es el ícono, porque es
+   quien "habla". Con esto la espera se lee de un vistazo, sin tener que interpretar nada.
+
+   Dos animaciones distintas a propósito, no una:
+   - el ícono late despacio (1.4s), como una respiración — rápido daría ansiedad justo cuando toca
+     esperar;
+   - el halo sale hacia afuera y se desvanece (1.8s), que es lo que da la sensación de "procesando".
+   Al ir desfasadas, el conjunto nunca se ve como un parpadeo mecánico.
+
+   El halo se dibuja con "box-shadow" y no con un elemento aparte: no ocupa espacio, no empuja nada
+   y no puede desalinear la burbuja de al lado. */
+@keyframes meiti-chat-latido {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+@keyframes meiti-chat-halo {
+  0%   { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.45); }
+  70%  { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+.meiti-chat-avatar-pensando {
+  animation: meiti-chat-halo 1.8s ease-out infinite;
+}
+.meiti-chat-avatar-pensando > i {
+  display: inline-block;
+  animation: meiti-chat-latido 1.4s ease-in-out infinite;
+}
+
+/* Quien pidió menos movimiento en su sistema no ve ninguno — el indicador sigue estando (los tres
+   puntitos y el texto), solo deja de moverse. */
+@media (prefers-reduced-motion: reduce) {
+  .meiti-chat-avatar-pensando,
+  .meiti-chat-avatar-pensando > i {
+    animation: none;
+  }
+  /* 🌗 [SISTEMA VISUAL 2026-08-26] El glow del input del asistente se queda (es una firma pedida a
+     propósito), pero para quien pidió menos movimiento se congela en su estado visible: sigue
+     marcando el foco, deja de latir. Un indicador de foco NUNCA se apaga del todo — sin él, quien
+     navega con teclado pierde dónde está parado. */
+  .meiti-input-vivo:focus-within,
+  .meiti-input-vivo--espera {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  }
+}
+
+/* 💻 [2026-08-20, pedido del usuario: "en pc sí hay que dejar un espacio abajo en la primera
+   pantalla de cada chat"] En un teléfono el campo va pegado al borde porque ahí abajo está el
+   teclado y cada píxel cuenta. En una computadora no hay teclado que ocupe lugar: pegado al borde
+   se ve como si la página estuviera cortada.
+   Solo en la pantalla INICIAL. Con la conversación andando el campo vuelve al borde, que es la
+   referencia fija de la pantalla (regla 2 de la librería) — moverlo al mandar el primer mensaje
+   sería justo lo que venimos evitando. */
+/* Dos cosas tiran del borde de abajo de la barra, y ahora se resuelven juntas en vez de pelearse:
+   • "--meiti-desfase": cuánto le falta al contenedor para llegar al borde real de la pantalla (lo
+     mide ModoChat en vivo). Si el chat vive dentro de un contenedor con respiro propio, la barra
+     baja esa cantidad para quedar igual pegada.
+   • la separación de escritorio: el aire que le corresponde a la pantalla inicial en PC.
+   Antes el desfase iba como estilo inline y le ganaba a la clase, así que Servicios (que vive
+   dentro de un contenedor con 4rem de respiro) se quedaba SIN el aire de PC mientras Crear App sí
+   lo tenía: 0px contra 28px en la misma situación. Con la resta en un solo lugar, las dos dan 28. */
+/* 📐 [DESBORDE DEL CAMPO 2026-08-25, reportado por el usuario: "el campo de entrada se desborda
+   por los lados del ancho de la ventana"] La barra es "absolute inset-x-0" dentro del contenedor
+   del chat, y un elemento absoluto se posiciona contra la CAJA DE PADDING de su ancestro: con
+   left:0/right:0 se come el padding del contenedor y se pega a los bordes. En una caja angosta
+   —el modal de Pedir cambio, que ademas es overflow-hidden— el campo quedaba tocando los costados
+   y su glow recortado, que es lo que se ve como "desbordado".
+   "padding-*: inherit" toma el padding horizontal REAL del contenedor, sea cual sea: cada pantalla
+   le pasa el suyo por className (p-4, p-5, ninguno) y la barra se alinea sola con el resto del
+   contenido. Sin numeros fijos que haya que mantener en dos lugares. */
+.meiti-chat-barra {
+  bottom: calc(-1 * var(--meiti-desfase, 0px));
+  padding-left: inherit;
+  padding-right: inherit;
+}
+@media (min-width: 640px) {
+  .meiti-chat-barra--separada {
+    bottom: calc(1.75rem - var(--meiti-desfase, 0px));
+  }
+}
+
+/* 💻 [2026-08-20, pedido del usuario: "es mejor subir el bloque"] En teléfono la conversación va
+   pegada abajo, contra el campo de escribir: es donde llega el pulgar y donde queda a la vista con
+   el teclado abierto. En una computadora eso mismo deja una franja muerta enorme entre el título de
+   la página y el contenido — medido en la landing a 1280×800: el encabezado terminaba en 94 y el
+   primer contenido arrancaba recién en 390.
+   De 640px para arriba el bloque se centra en el alto disponible en vez de hundirse: sube, y el
+   vacío se reparte en vez de acumularse todo arriba.
+   ⚠️ Esto NO mueve el campo de escribir: la barra está posicionada aparte, contra el borde de abajo
+   (regla 2 de la librería). Solo cambia dónde se apoyan los mensajes dentro de su propia caja. */
+/* 💻 [2026-08-20] Acá hubo un centrado vertical para escritorio ("subir el bloque", 20/08) que
+   se sacó el mismo día: dejaba el último mensaje a 231px del campo de escribir, y lo pedido después
+   fue lo contrario — "en pc un espacio entre el campo y el mensaje, no muy grande".
+   Además rompía el scroll cuando el contenido desbordaba (medido: 74px del último mensaje fuera de
+   la vista), la variante conocida del bug de flexbox + overflow.
+   Los mensajes se apoyan contra el campo en las dos resoluciones; lo único que cambia es cuánto
+   aire queda entre ellos, y eso se resuelve con el padding de abajo (ver más abajo). */
+
+
+/* 📌 [2026-08-20] La separación entre el último mensaje y el campo de escribir.
+   El hueco base es el alto real de la barra (lo mide ModoChat en vivo y lo publica acá como
+   "--meiti-hueco-barra"): sin él, la barra taparía el último mensaje.
+   Encima de eso, cuánto AIRE queda entre el mensaje y el campo, que el usuario pidió distinto según
+   la pantalla. [2026-08-23] Ese criterio cambió: ahora las dos pantallas llevan aire (teléfono 1rem,
+   PC 0.875rem sobre el hueco de la barra), porque con la conversación andando el teléfono se veía
+   apretado. */
+.meiti-chat-mensajes-bloque {
+  /* 📐 [2026-08-23, pedido del usuario: "cuando estas escribiendo tambien dale espacios, todo
+     queda pegado"] Antes en telefono el aire extra era CERO, a pedido suyo ("pegado, como cualquier
+     chat de telefono", 2026-08-20). Con la conversacion andando se veia apretado, asi que ahora
+     lleva el mismo respiro que el resto de la columna.
+     Se anota el cambio de criterio a proposito: sin esto, el proximo que lea el comentario viejo
+     "arregla" el 1rem pensando que es un descuido.
+     Entre mensajes NO hace falta tocar nada: ya tienen gap-5 (20px) en ModoChat. */
+  padding-bottom: calc(var(--meiti-hueco-barra, 0px) + 1rem);
+}
+
+/* 📐 [2026-08-23, pedido del usuario: "dale lo mismo del texto a las cards de apps"] El mismo
+   aire que se le dio a las etiquetas, ahora entre la vitrina de apps y el primer mensaje.
+   En telefono no habia NADA: el respiro del encabezado vivia solo dentro del @media de 640px
+   (cuando se agrego, comparando el Lego publico con el de Herramientas Dev, en telefono se veia
+   bien y se dejo afuera a proposito). Con la vitrina arriba del mensaje, ahi si hacia falta.
+   16px, los mismos que separan al mensaje de las etiquetas y a las etiquetas del campo: la
+   columna entera queda con un solo ritmo en vez de tres distancias distintas. */
+.meiti-chat-encabezado {
+  padding-bottom: 1rem;
+}
+@media (min-width: 640px) {
+  .meiti-chat-mensajes-bloque {
+    padding-bottom: calc(var(--meiti-hueco-barra, 0px) + 0.875rem);
+    /* 💻 [2026-08-20, pedido del usuario: "está muy bajo el bloque aún — subilo un poco más en
+       vista PC y ya le das a todo su espacio"] El bloque arranca ARRIBA del área de mensajes en vez
+       de quedar hundido contra la barra: medido, su borde superior pasa de 380 a 140.
+       En una columna invertida (ver ModoChat) el que empuja hacia arriba es "margin-bottom: auto".
+       ⚠️ No rompe el anclaje al último mensaje: los márgenes automáticos solo actúan cuando SOBRA
+       espacio. Apenas la conversación desborda dejan de tener efecto y vuelve el comportamiento de
+       siempre — el más reciente pegado a la barra. */
+  }
+  /* En la columna invertida "margin-bottom: auto" empuja hacia ARRIBA. Va en la vitrina y no en los
+     mensajes: las apps al tope, los mensajes pegados al campo. */
+  .meiti-chat-encabezado {
+    margin-bottom: auto;
+    /* 📏 [2026-08-22, comparando el Lego público con el de Herramientas Dev] El "auto" de arriba
+       reparte el espacio que SOBRA: en un chat a pantalla completa da mucho aire (medido: 289px),
+       pero en un chat embebido, que es un panel acotado, no sobra nada y resuelve en CERO — la
+       vitrina quedaba pegada al primer mensaje.
+       Este respiro es propio y no depende de que sobre lugar, así que vale en los dos casos.
+       Solo desde 640px: en teléfono el usuario confirmó que ya estaba bien. */
+    padding-bottom: 1.25rem;
+  }
+}
+
+/* 🖼️ [2026-08-20] El alto de la vitrina, atado en UN solo lugar.
+   Son dos bloques distintos que se turnan: las tarjetas de apps publicadas y, mientras no haya
+   ninguna, los tres banners propios. Al aparecer las apps, los banners desaparecen — y si midieran
+   distinto, todo lo de abajo saltaría de lugar justo en ese momento.
+   El ancho NO importa (van en una fila deslizable y cada bloque tiene su forma: la tarjeta es
+   vertical, el banner apaisado 1200×628). Lo único que tiene que coincidir es el alto, y por eso
+   vive acá y no escrito dos veces: cambiarlo mueve los dos a la vez. */
+:root {
+  --meiti-alto-vitrina: 122px;
+}
+.meiti-vitrina-pieza {
+  height: var(--meiti-alto-vitrina);
+}
+/* 🎴 [CARTELES DE LA VITRINA 2026-08-26, pedido del usuario: "las 3 imágenes oscuras de la vitrina,
+   hacelas para el modo claro y que switcheen"] Eran tres JPG (card1/2/3) con el fondo oscuro Y EL
+   TEXTO QUEMADO ADENTRO. Se dibujan acá, y con eso se arreglan cuatro cosas de una:
+     · cambian con el modo, que es lo que se pidió — el fondo sale del template;
+     · se TRADUCEN: el texto ya existe en es/en (showcase_automate y compañía), pero la imagen
+       mostraba el español a todo el mundo;
+     · se acabó el voseo: los JPG decían "Automatizá / Creá / Armá", que sacamos del producto en
+       esta misma sesión y ahí seguía, fuera del alcance de cualquier búsqueda de texto;
+     · pesaban ~46 kB entre las tres y ahora no se descarga nada.
+   El alto es el MISMO que el de una tarjeta de app (--meiti-alto-vitrina) y la proporción la que
+   tenían los JPG (466×233), así que cuando lleguen las apps de verdad el bloque mide igual y no
+   salta nada. */
+.meiti-vitrina-banner {
+  height: var(--meiti-alto-vitrina);
+  aspect-ratio: 466 / 233;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  background: var(--tema-cartel);
+  box-shadow: inset 0 0 0 1px var(--tema-cartel-borde);
+}
+.meiti-vitrina-banner i {
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--color-acento);
+  /* La chispa lima de los originales: no es un color de rol, es la marca. Va igual en los dos
+     modos a propósito — es identidad, no tema. */
+  text-shadow: 0 0 14px rgb(163 230 53 / 0.35);
+}
+.meiti-vitrina-banner span {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.15;
+  color: var(--color-texto);
+  max-width: 12ch;
+}
+
+/* 🎴 [2026-08-21, pedido del usuario: "las tarjetas como las de Mis apps — cuadradas, con el borde
+   de color a un lado y los mismos efectos"] El look de una tarjeta que representa una app.
+   El borde izquierdo lleva el color real de esa app (su "tema.colorPrimario"), que es lo que
+   permite reconocerla sin leer el nombre cuando hay muchas juntas.
+   ⚠️ Esquinas RECTAS a propósito: un borde grueso de un solo lado con esquinas redondeadas se ve
+   cortado en las puntas — el radio corta la franja de color en diagonal. O borde completo y
+   redondeado, o una sola cara y recto.
+   Vive acá y no repetido en cada pantalla porque ya lo usan Mis apps y el market. */
+.meiti-tarjeta-color {
+  background-color: var(--color-superficie, #ffffff);
+  border: 1px solid var(--color-borde-suave, #e2e8f0);
+  border-left-width: 3px;
+  border-left-color: var(--meiti-color-app, #7c3aed);
+  border-radius: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.meiti-tarjeta-color:hover {
+  border-color: #ddd6fe;
+  border-left-color: var(--meiti-color-app, #7c3aed);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* 📐 [PATRONES DE CONTENIDO 2026-08-26 — la última pieza del canvas "Fundamentos"]
+   Dos patrones que separan una pantalla amateur de una profesional, definidos UNA vez:
+
+   .meiti-rotulo  El rótulo de sección: 11px, negrita, mayúsculas, tracking abierto. El color va
+                  con :where() (especificidad cero) para que un uso puntual pueda teñirlo con
+                  cualquier text-* de rol sin pelear con esta clase.
+   .meiti-dato    Todo número, precio, fecha o código: monoespaciada con cifras tabulares — en una
+                  columna se alinean solas y se comparan de un vistazo. La diferencia más barata
+                  entre una tabla amateur y una profesional. */
+.meiti-rotulo {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* 🧱 [CAPA 2026-08-26] El color por defecto del rótulo va dentro de "base" para que CUALQUIER
+   "text-*" de la pantalla le gane. El ":where()" solo no alcanzaba: en Tailwind v4 las utilidades
+   viven en una capa, y una regla sin capa le gana a todas por más baja que sea su especificidad.
+   Medido: un ".meiti-rotulo text-texto-suave" salía con el color tenue de esta línea, no con el
+   suyo. La forma (tamaño, mayúsculas, tracking) queda fuera de la capa a propósito: eso ES el
+   patrón y no se negocia; lo único que la pantalla puede cambiar es el color. */
+@layer base {
+  .meiti-rotulo { color: var(--color-texto-tenue); }
+}
+.meiti-dato {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* 🧱 [CAPA 2026-08-26] Va dentro de "@layer base" a propósito, y esto NO es un detalle: en
+   Tailwind v4 las utilidades viven en una capa, y una regla SIN capa le gana a cualquier clase por
+   más específica que sea. Medido: con la regla suelta, el select de idioma —que va transparente y
+   sin borde dentro de su píldora— quedaba con fondo y borde igual que los demás, porque su
+   "bg-transparent" perdía. Dentro de "base", la utilidad vuelve a mandar: la pantalla que ya se
+   compuso a mano sigue mandando, y la que no trae nada hereda el vocabulario del tema. */
+@layer base {
+  /* 🔽 [SELECTS 2026-08-26, pedido del usuario: "los select no tienen estilos definidos en el tema,
+     están azules y crudos — ejemplo el de lenguaje; revisalos todos"] Los 35 <select> del producto
+     caían al dibujo nativo del sistema operativo: azul de Windows, esquinas cuadradas y una flecha
+     ajena. Se resuelve UNA vez acá, con selector de ELEMENTO (especificidad 0,0,1) a propósito:
+     cualquier clase de Tailwind que un select ya tenga le sigue ganando, así que los que ya estaban
+     compuestos a mano —el de idioma, que va transparente y sin borde dentro de su píldora— no se
+     tocan; y los que no tenían nada quedan vestidos con el vocabulario del tema.
+     La flecha es un SVG embebido y pintado con el color del texto: el triángulo nativo no se puede
+     teñir, y era la mitad de lo que se veía "crudo". */
+  /* ⚠️ [2026-08-26, reportado por el usuario: "en modo claro no sé qué le pasa a la palabra
+     Español, se ve algo en la ñ"] Acá había una flecha SVG propia, con "appearance: none" y un
+     padding derecho de 2rem para hacerle lugar. Estaba mal y el usuario vio la punta del
+     iceberg: los 23 selects del producto ponen su PROPIO padding (p-2, p-3, pr-1...), que le
+     gana al de esta regla — así que la flecha se dibujaba encima del texto en todos, y en el de
+     idioma, que mide 50px, caía justo sobre la "ñ".
+     No se puede reservar lugar desde acá para una flecha nuestra sin pisar lo que cada pantalla
+     ya compuso. Así que la flecha vuelve a ser la del sistema: se dibuja sola, dentro del
+     recuadro, sin importar el padding. Con "color-scheme" declarado en el template, el navegador
+     ya la pinta del modo correcto. Lo que sí era el problema —el azul crudo de Windows y la
+     lista desplegada en blanco sobre oscuro— se arregla con el color, que es lo que queda. */
+  select {
+    background-color: var(--color-superficie);
+    color: var(--color-texto);
+    border: 1px solid var(--color-borde);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  select:hover { border-color: var(--color-borde-fuerte); }
+  select:focus-visible {
+    outline: none;
+    border-color: var(--color-acento);
+    box-shadow: 0 0 0 3px var(--color-acento-tinte-2);
+  }
+  select:disabled { opacity: 0.55; cursor: not-allowed; }
+  /* La lista desplegada la dibuja el sistema operativo, pero respeta estos dos: sin ellos, en modo
+     oscuro la lista salía blanca aunque el select fuera oscuro. */
+  select option {
+    background-color: var(--color-superficie);
+    color: var(--color-texto);
+  }
+
+}
+
+/* 🔽 [DESPLEGABLE PROPIO 2026-08-26] El look de la pieza que reemplaza al <select> nativo (ver
+   src/comunes/Desplegable.jsx). Todo sale del vocabulario del tema, así que cambia con el modo —
+   que es exactamente lo que el menú del sistema operativo no podía hacer.
+   El resaltado va con el acento de MEITI y no con el azul de Windows, que era la otra mitad del
+   reporte. */
+.meiti-desplegable {
+  position: relative;
+  display: inline-block;
+}
+.meiti-desplegable-boton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.meiti-desplegable-boton:hover:not(:disabled) { border-color: var(--color-borde-fuerte); }
+.meiti-desplegable-boton:focus-visible {
+  outline: none;
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 3px var(--color-acento-tinte-2);
+}
+.meiti-desplegable-boton:disabled { opacity: 0.55; cursor: not-allowed; }
+.meiti-desplegable-vacio { color: var(--color-texto-tenue); }
+.meiti-desplegable-flecha {
+  font-size: 0.7rem;
+  color: var(--color-texto-suave);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+.meiti-desplegable-flecha.abierta { transform: rotate(180deg); }
+
+.meiti-desplegable-lista {
+  position: absolute;
+  z-index: 60;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  max-height: 18rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 30px -10px var(--tw-shadow-color, rgb(15 23 42 / 0.25));
+}
+/* Cuando abajo no hay lugar, la lista se abre hacia arriba (lo mide el componente). */
+.meiti-desplegable-lista.arriba { top: auto; bottom: calc(100% + 0.25rem); }
+
+.meiti-desplegable-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-texto-medio);
+  cursor: pointer;
+}
+.meiti-desplegable-opcion.resaltada {
+  background-color: var(--color-acento);
+  color: var(--color-sobre-acento);
+}
+.meiti-desplegable-opcion.elegida { color: var(--color-acento); font-weight: 600; }
+.meiti-desplegable-opcion.elegida.resaltada { color: var(--color-sobre-acento); }
+.meiti-desplegable-opcion.inhabilitada { opacity: 0.45; cursor: not-allowed; }
+.meiti-desplegable-opcion i { font-size: 0.75rem; flex-shrink: 0; }
+
+/* ⌨️ Quien navega con teclado ve el resaltado; quien usa el mouse, también — es el mismo. */
+@media (prefers-reduced-motion: reduce) {
+  .meiti-desplegable-flecha { transition: none; }
+}
+
+/* 🔽 Variante "desnuda": el desplegable adentro de algo que ya es el recuadro (la píldora de
+   idioma en la barra). Sin fondo, sin borde y sin padding propios — igual que iba el <select>
+   que reemplaza. La lista sí conserva su recuadro completo: es la que tiene que leerse. */
+.meiti-desplegable--desnudo .meiti-desplegable-boton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: var(--color-texto-medio);
+  gap: 0.35rem;
+}
+.meiti-desplegable--desnudo .meiti-desplegable-boton:focus-visible {
+  box-shadow: none;
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+.meiti-desplegable--desnudo .meiti-desplegable-lista {
+  left: auto;
+  right: 0;
+  min-width: 9rem;
+}
+
+/* 🔽 [ABRE A LA DERECHA 2026-09-02, pedido del usuario: "el select... hacia la izquierda mal y se
+   sale de la pantalla en el teléfono, solo debe abrir arriba y alineado a la derecha"] La variante
+   "desnuda" de arriba nació para la píldora de idioma, que vive pegada al borde DERECHO de la
+   pantalla — ahí alinear la lista por su borde derecho (creciendo hacia la izquierda) es lo único
+   que cabe. El selector de modelo del Editor con IA vive pegado al borde IZQUIERDO del panel — la
+   misma regla ahí crece hacia la izquierda y se sale por el borde de un teléfono angosto. Este
+   modificador no toca el de arriba (compone al lado, ver EditorConClaude.jsx): alinea la lista por
+   su borde IZQUIERDO, creciendo hacia la derecha — donde sí hay pantalla. */
+.meiti-desplegable--abre-derecha .meiti-desplegable-lista {
+  left: 0;
+  right: auto;
+}
+
+/* 🎴 [ACENTO DE TARJETA 2026-08-27] Una tarjeta que ya tiene elevación levanta un poco más al pasar
+   el mouse. Va acá y no inline porque ":hover" no existe en un style de React, y porque esto es
+   vocabulario que se repite: lo que se repite vive en la hoja propia, nunca duplicado en cada
+   componente. Solo la ponen los packs que declaran "elevaAlPasar" (bento, cálido) — un pack plano
+   como "denso" no la lleva y se queda quieto, que es justo su carácter. */
+.meiti-tarjeta-viva {
+  transition-property: transform, box-shadow;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  /* 🕳️ [BUG REAL CONFIRMADO 2026-08-29, medido en vivo en SubastasUsados/Pujar] Acá había un
+     "will-change: transform" permanente, y esa propiedad CREA UN CONTEXTO DE APILAMIENTO.
+     O sea que cada tarjeta pasaba a ser su propia burbuja: la lista de un desplegable, con su
+     z-50, quedaba ENCERRADA adentro de su tarjeta y no podía pintar sobre la de al lado, que se
+     dibuja después. Ese es el síntoma que el usuario reportó TRES veces ("el select se esconde
+     detrás de la card"); las dos primeras se arregló otra cosa —un overflow, y el recorte contra
+     el borde del iframe— porque esta causa vive un nivel más adentro y no se ve leyendo el
+     componente: hay que mirar los estilos computados.
+     Se saca. "will-change" es una PISTA para un cambio INMINENTE, no algo que se deja puesto
+     siempre; dejarlo fijo además fuerza una capa de composición por tarjeta. La transición de
+     arriba funciona igual sin él. */
+}
+@media (hover: hover) {
+  .meiti-tarjeta-viva:hover {
+    transform: translateY(-2px);
+  }
+}
+/* Quien prefiere no ver movimiento, no lo ve. */
+@media (prefers-reduced-motion: reduce) {
+  .meiti-tarjeta-viva { transition: none; }
+  .meiti-tarjeta-viva:hover { transform: none; }
+}
+
+/* 🎚️ [2026-08-29] Los controles que el SISTEMA pinta con SU color, no con el de la app.
+   Misma familia que el <select> y el calendario del 2026-08-28: barrido completo de los moldes que
+   siembran apps nuevas, y quedaban estos tres. Un checkbox azul de Windows adentro de una app
+   violeta se lee como si fuera de otro programa.
+
+   Se arregla acá, en CSS global, y no molde por molde: "accent-color" es exactamente la propiedad
+   que existe para esto, y así lo hereda TODA app —las 22 de hoy y las que se forjen— sin tocar una
+   sola pieza. El valor sale de --meiti-acento, que pone el contenedor del molde con el color real
+   del tema; el fallback es el color del texto, que siempre se lee sobre su propio fondo. */
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'],
+progress {
+  accent-color: var(--meiti-acento, currentColor);
+}
+
+/* El slider necesita algo más que accent-color: sin esto su riel sigue siendo el gris del sistema,
+   que sobre fondo oscuro casi no se ve. */
+input[type='range'] {
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-runnable-track,
+input[type='range']::-moz-range-track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--meiti-acento, currentColor) 25%, transparent);
+}

@@ -1,0 +1,81 @@
+{
+  "name": "tablerosnorte-muugzt8s",
+  "private": true,
+  "version": "0.1.0",
+  "description": "App generada con MEITI — TablerosNorte",
+  "author": {
+    "name": "MEITI",
+    "email": "myapps@meiti.dev"
+  },
+  "homepage": "https://meiti.dev",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "rebuild:sqlite": "electron-rebuild -f -w sqlite3 --module-dir server",
+    "dist:desktop": "vite build && npm run rebuild:sqlite && electron-builder",
+    "cap:add:android": "vite build && cap add android",
+    "cap:add:ios": "vite build && cap add ios",
+    "cap:sync": "vite build && cap sync",
+    "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.3",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "react-live": "^4.1.8",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "recharts": "^3.10.1",
+    "vite": "^6.2.3"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/assets": "^3.0.5",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "@electron/rebuild": "^4.2.1"
+  },
+  "build": {
+    "appId": "dev.meiti.export.tablerosnorte_muugzt8s",
+    "productName": "TablerosNorte",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "asar": false,
+    "files": [
+      "dist/**",
+      "electron/**",
+      "server/**",
+      "!server/data.sqlite"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    }
+  }
+}

@@ -1,0 +1,381 @@
+@import "tailwindcss";
+
+/* 🔤 [FUENTES AUTO-ALOJADAS 2026-08-15, bug real reportado en un Android real en producción]
+   Antes esto era un @import a fonts.googleapis.com — dependía de que ESE dispositivo pudiera
+   alcanzar la CDN de Google en el momento justo (bloqueada/filtrada por la red/el operador, modo
+   ahorro de datos, o simplemente lenta) para que el swap de fuente llegara a pasar. Ahora los
+   .woff2 reales (subset "latin" — cubre español: á é í ó ú ñ ¿ ¡, ver unicode-range U+0000-00FF de
+   Google) viven en public/fonts/ y se sirven desde el mismo dominio que el resto del sitio, cero
+   dependencia de terceros. Cada familia resultó ser un único archivo variable que cubre todo el
+   rango de pesos que usa el proyecto (confirmado: Google devolvió la MISMA URL para cada peso
+   pedido) — un solo @font-face por familia, con "font-weight" como rango, alcanza. */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* 🎨 [KIT UI 2026-08-14, pedido explícito del usuario: "sigue con kit ui agregar estilos que
+   agregamos en meiti ayer"] estiloMeiti.css antes solo lo cargaba main.tsx (el bundle de Core) —
+   invisible para el runtime SANDBOXEADO donde de verdad corre el código de las apps generadas
+   (sandboxRuntimeMain.jsx solo importaba este archivo, index.css, nunca estiloMeiti.css). Como
+   este archivo (index.css) es el único que los TRES contextos comparten (Core, el iframe del
+   sandbox, y el "main.jsx" que se hornea en cada export nativo — ver generarArchivosProyectoExportado
+   en server.js), importar estiloMeiti.css ACÁ lo propaga a los tres de una sola vez. Las clases
+   propias del panel admin (.meiti-header-pagina, .meiti-tarjeta-app, etc.) quedan definidas mundialmente
+   pero inertes salvo que algo las use — ningún molde de una app generada las referencia, así que esto
+   nunca cambia el aspecto de una app existente por sí solo. */
+@import "./estiloMeiti.css";
+/* 🏛️ [TEMPLATES DEL PORTAL 2026-08-26] El LOOK del portal vive en src/temas/<id>/tema.css — un
+   template por carpeta, activado por <html data-tema="...">. Las variables de @theme de abajo
+   quedan como los valores que Tailwind necesita para GENERAR las utilidades (y como red si el
+   atributo faltara); la fuente de verdad de los valores es el template. */
+@import "./temas/index.css";
+
+/* 🩹 BUG REAL CONFIRMADO (2026-08-01): este proyecto usa Tailwind v4 (config CSS-first, sin
+   ningún @config que cargue tailwind.config.js — ese archivo quedó totalmente muerto, su
+   "safelist" nunca se aplicaba). EnvoltorioMatriz (MotorUI.jsx) arma la clase de columna en
+   tiempo de ejecución como `lg:col-span-${colSpan}` — al no existir ese literal exacto en
+   ningún archivo fuente, el escaneo de contenido de Tailwind nunca la generaba: en desktop/
+   tablet TODO módulo de TODA app caía siempre al fallback `col-span-12` (ancho completo), sin
+   importar qué "col_span" pidiera el esquema. @source inline() es el reemplazo nativo de v4
+   para "safelist" — el primer elemento vacío en las llaves cubre también la clase sin prefijo. */
+@source inline("{,lg:}col-span-{1..12}");
+
+/* 🩹 BUG REAL CONFIRMADO (2026-08-01, reportado por el usuario: "el formulario está pegado a
+   las tarjetas" en CreatorSuite y otras apps por igual) — causa raíz mucho más amplia que un
+   solo caso: src/fabrica/diccionario/ (donde vive el .jsx físico de cada molde ya materializado,
+   ver database.js) está en .gitignore ("datos en tiempo de ejecución, nunca en el repo"), y el
+   escaneo automático de contenido de Tailwind v4 RESPETA .gitignore por defecto — así que
+   CUALQUIER clase que Gemini use en el código de una app, si no aparece por casualidad en algún
+   archivo del panel admin escrito a mano, nunca se compila. Confirmado contra el CSS ya
+   desplegado: ".space-y-6" (usado en CreatorSuite_msa9vxs2__CS_GestorContenido.jsx, entre el
+   formulario y las tarjetas de Idea/Guion/Grabación) NUNCA existió en ningún build histórico,
+   mientras que ".space-y-4"/".space-y-5" sí (esos SÍ aparecen en archivos reales del panel
+   admin). No es un caso aislado — es sistémico, y potencialmente afecta a cualquier clase de
+   cualquier app materializada. Fix: forzar el escaneo explícito de esa carpeta con @source,
+   pasando por encima del .gitignore para ESTA ruta puntual (Tailwind lo permite a propósito). */
+@source "./fabrica/diccionario";
+
+/* 🩹 BUG REAL CONFIRMADO (2026-08-18, reportado por el usuario: "la gráfica velas no abre") — el
+   agujero que le quedaba al fix de arriba, y la causa raíz de una familia entera de bugs visuales.
+   @source "./fabrica/diccionario" solo cubre un molde DESPUÉS de que se materializó Y de que se
+   volvió a compilar el CSS. Pero en producción el CSS se hornea una sola vez, en el deploy, y los
+   moldes se generan DESPUÉS, en runtime: cualquier clase que la IA use y que no estuviera ya en
+   ese CSS congelado no tiene regla, no falla, no avisa — simplemente no hace nada.
+   Diagnosticado en vivo con un molde real (GraficoVelasJaponesas): un debug inyectado en el propio
+   molde confirmó 42 velas cargadas, sin error y sin estar cargando — los datos estaban perfectos.
+   Lo que faltaba era ".h-96", que nunca se compiló: el contenedor del gráfico quedaba sin altura,
+   ResponsiveContainer (recharts) medía 0 y dibujaba un SVG invisible. De las 107 clases distintas
+   que usaba esa app, 25 no tenían regla — entre ellas "md:flex-row", "md:items-start", "md:mt-0" y
+   "md:inline", o sea que los moldes generados por IA venían perdiendo su layout de ESCRITORIO en
+   silencio (síntoma que el usuario ya había reportado como "tarjetas que se tragan todo apilado
+   dentro en vez de estirarse", sin que se supiera que era esto).
+   Fix: publicar por adelantado el vocabulario que la IA puede usar, para que exista en el CSS sin
+   depender de CUÁNDO se generó el molde. Deliberadamente GENEROSO (decisión explícita del usuario)
+   — es preferible pagar unos kB de CSS que volver a perder un layout entero en silencio.
+   ⚠️ Estas clases deben coincidir con las que el prompt le publica a la IA (oraculo.js): si se
+   agrega una acá, va también allá, y al revés. */
+
+/* Layout: display, flex/grid y alineación — con variantes responsive, que era lo que más faltaba. */
+@source inline("{,sm:,md:,lg:}{block,inline-block,inline,flex,inline-flex,grid,hidden}");
+@source inline("{,sm:,md:,lg:}flex-{row,col,row-reverse,col-reverse,wrap,nowrap,1,auto,initial,none}");
+@source inline("{,sm:,md:,lg:}items-{start,center,end,stretch,baseline}");
+@source inline("{,sm:,md:,lg:}justify-{start,center,end,between,around,evenly}");
+@source inline("{,sm:,md:,lg:}self-{auto,start,center,end,stretch}");
+@source inline("{,sm:,md:,lg:}grid-cols-{1..12}");
+@source inline("{,sm:,md:,lg:}text-{left,center,right,justify}");
+@source inline("{,sm:,md:,lg:}order-{1..12}");
+
+/* Tamaños: la escala de espaciado de Tailwind, en alto y ancho. ".h-96" vive acá. */
+@source inline("{,sm:,md:,lg:}{w,h}-{0,px,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96}");
+@source inline("{,sm:,md:,lg:}{min-h,max-h,min-w,max-w}-{0,16,20,24,32,40,48,56,64,72,80,96}");
+@source inline("{,sm:,md:,lg:}{w,h,min-h,max-h,min-w,max-w}-{full,screen,auto,fit,min,max,none}");
+@source inline("max-w-{xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,prose}");
+
+/* Espaciado interno/externo y separación entre hijos. */
+@source inline("{,sm:,md:,lg:}{p,px,py,pt,pb,pl,pr}-{0,px,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,14,16,20,24}");
+@source inline("{,sm:,md:,lg:}{m,mx,my,mt,mb,ml,mr}-{0,px,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,14,16,20,24,auto}");
+@source inline("{,sm:,md:,lg:}{gap,gap-x,gap-y}-{0,px,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10,12,16,20,24}");
+@source inline("{,sm:,md:,lg:}space-{x,y}-{0,px,1,1.5,2,2.5,3,3.5,4,5,6,8,10,12}");
+
+/* Tipografía. */
+@source inline("{,sm:,md:,lg:}text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl}");
+@source inline("font-{thin,extralight,light,normal,medium,semibold,bold,extrabold,black,mono,sans,serif}");
+@source inline("{uppercase,lowercase,capitalize,normal-case,italic,not-italic,truncate,underline,line-through,no-underline,break-words,break-all,whitespace-nowrap,whitespace-pre-wrap,tracking-{tighter,tight,normal,wide,wider,widest},leading-{none,tight,snug,normal,relaxed,loose}}");
+
+/* Bordes, esquinas y sombra — lo que usa cualquier tarjeta/badge que arme la IA. */
+@source inline("rounded{,-none,-sm,-md,-lg,-xl,-2xl,-3xl,-full}");
+@source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{none,sm,md,lg,xl,2xl,3xl,full}");
+@source inline("border{,-0,-2,-4,-8,-t,-b,-l,-r,-t-2,-b-2,-l-2,-r-2,-l-4,-dashed,-dotted,-solid,-none}");
+@source inline("shadow{,-none,-sm,-md,-lg,-xl,-2xl,-inner}");
+
+/* Posición, capas, desborde y visibilidad. */
+@source inline("{relative,absolute,fixed,sticky,static,inset-0,top-0,bottom-0,left-0,right-0}");
+@source inline("z-{0,10,20,30,40,50,auto}");
+@source inline("overflow-{auto,hidden,visible,scroll}");
+@source inline("overflow-{x,y}-{auto,hidden,visible,scroll}");
+@source inline("{,sm:,md:,lg:}{visible,invisible,sr-only,not-sr-only}");
+
+/* Estados interactivos: la IA arma sus propios botones/filas clicables. */
+@source inline("{hover:,focus:,active:,disabled:,group-hover:}{underline,no-underline,opacity-{0,25,50,60,70,75,80,90,100},shadow-{sm,md,lg,xl},scale-{95,100,105,110},border-current}");
+@source inline("{cursor-{pointer,default,not-allowed,wait,text,move},select-none,pointer-events-none,pointer-events-auto,outline-none}");
+@source inline("opacity-{0,5,10,20,25,30,40,50,60,70,75,80,90,95,100}");
+@source inline("{transition,transition-all,transition-colors,transition-opacity,transition-transform,duration-{75,100,150,200,300,500,700,1000},ease-{linear,in,out,in-out},animate-{none,spin,ping,pulse,bounce}}");
+
+/* Grillas y tablas: alto de fila, colapso de bordes, alineación vertical. */
+@source inline("{table,table-auto,table-fixed,border-collapse,border-separate,align-{top,middle,bottom,baseline}}");
+@source inline("{,sm:,md:,lg:}{row-span-{1..6},col-start-{1..13},col-end-{1..13}}");
+
+/* 🩹 BUG REAL CONFIRMADO (2026-08-01): ni acá ni en el index.html raíz se le daba una altura
+   real a html/body/#root — sin eso, el patrón "barra superior fija + contenido que scrollea +
+   barra inferior fija" (EnvoltorioAppMultiPagina, MotorUI.jsx) no tiene de dónde heredar el
+   alto: se rompe apenas el contenedor padre tampoco resuelve un alto (pasó en el propio Radar
+   de MEITI con CreatorSuite logueada, y en el APK real instalado en un celular — misma causa
+   raíz en los dos). Esta única regla se hereda a TODO: el panel vivo Y cada export (zip,
+   Electron, Android/iOS, Raspberry Pi) porque todos leen este mismo archivo al empaquetar.
+   🩹 [BUG REAL 2026-08-12, reportado por el usuario: "scroll de página afuera de todo,
+   principalmente en teléfono"] "100%" (equivalente a 100vh acá porque html/body no tienen padre
+   con alto propio) se calcula en mobile contra el alto GRANDE del viewport — el que existe antes
+   de que la barra de direcciones del navegador se colapse al hacer scroll — así que la página
+   queda unos pixeles más alta que el espacio realmente visible: no falta contenido, pero aparece
+   un scroll fantasma en TODA página (Core, wizard, landing) que no tiene nada real que mostrar al
+   final. "100dvh" (dynamic viewport height) se recalcula solo con el tamaño real visible en cada
+   momento — se agrega como mejora progresiva, con el 100% de siempre como respaldo para
+   navegadores que no lo soportan (la segunda declaración gana si el navegador entiende dvh). */
+html, body, #root {
+  height: 100%;
+  height: 100dvh;
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-meiti-materia: #ec4899;      /* Pink-500 */
+  --color-meiti-energia: #f59e0b;      /* Amber-500 */
+  --color-meiti-informacion: #3b82f6;  /* Blue-500 */
+  --color-meiti-tiempo: #10b981;       /* Emerald-500 */
+  --color-meiti-inteligencia: #8b5cf6; /* Purple-500 */
+
+  /* 🎨 [VOCABULARIO DE GRISES 2026-08-23, pedido del usuario: "los bordes y los textos
+     descriptivos que estan en gris claro ponlos en gris mas oscuro... si tocamos eso, mejor creamos
+     todo en estilo para que ya quede encaminado un cambio de estilo mas adelante en un solo
+     archivo"]
+
+     No era cuestion de gusto: "slate-400" sobre blanco da 2.8:1 de contraste cuando el minimo
+     legible es 4.5:1. Por eso "casi no se ven". Cada token vale UN escalon mas oscuro que el gris
+     que reemplaza, y todos se cambian desde aca.
+
+     Se nombran por su ROL y no por su tono: el proximo ajuste se hace en estas cinco lineas y no
+     buscando "slate-400" en 47 archivos.
+
+     ⚠️ Solo texto y borde. Los FONDOS (bg-slate-100/200, 58 usos) siguen con la paleta de
+     Tailwind a proposito: una superficie clara tiene que quedarse clara. Oscurecerlas junto con el
+     resto era el error facil de cometer aca. */
+  --color-texto-suave: #64748b;   /* textos descriptivos      (era slate-400 #94a3b8) */
+  --color-texto-tenue: #94a3b8;   /* lo mas tenue: contadores (era slate-300 #cbd5e1) */
+  --color-borde: #cbd5e1;         /* borde estandar           (era slate-200 #e2e8f0) */
+  --color-borde-suave: #e2e8f0;   /* separador apenas visible (era slate-100 #f1f5f9) */
+  --color-borde-fuerte: #94a3b8;  /* borde de hover/foco      (era slate-300 #cbd5e1) */
+
+  /* =====================================================================
+     🎨 VOCABULARIO DE ROLES DEL PORTAL [2026-08-26, pedido del usuario: "reemplaza todas las
+     clases... se hace como se debe una vez"]. Continuación natural del bloque de arriba: aquellas
+     cinco líneas nombraron texto y borde por su rol; estas nombran TODO lo demás. Las 3.429
+     clases crudas de Tailwind del portal (bg-white, text-slate-500, bg-violet-50...) se
+     reemplazaron por estas via script (infra/reemplazar-clases.py, con su tabla de mapeo y su
+     reporte de lo que quedó afuera).
+
+     Por qué: una clase cruda dice un TONO ("violeta 50") y no una intención — el mismo gris
+     terminaba escrito de cinco formas según quién tocó cada pantalla, y el modo oscuro era
+     imposible de hacer bien porque no había forma de saber qué quería SER cada color. Con roles,
+     el modo oscuro es redefinir este bloque y nada más.
+     ===================================================================== */
+  /* Superficies y rellenos */
+  --color-superficie: #ffffff;      /* tarjeta, panel, barra — lo que está "adelante" */
+  --color-fondo: #f8fafc;           /* el fondo de página */
+  --color-relleno: #f1f5f9;         /* relleno sutil: hover de fila, track de barra */
+  --color-relleno-fuerte: #e2e8f0;  /* relleno visible: chip neutro, botón terciario */
+  --color-inverso: #0f172a;         /* bloque oscuro a propósito (terminal, tooltip) */
+
+  /* Texto (completa los dos de arriba) */
+  --color-texto: #0f172a;           /* títulos y texto principal */
+  --color-texto-medio: #334155;     /* cuerpo secundario con peso */
+  --color-sobre-acento: #ffffff;    /* texto sobre acento/semántico sólido — blanco SIEMPRE */
+
+  /* Acento de marca (violeta) */
+  --color-acento: #7c3aed;          /* la acción principal */
+  --color-acento-fuerte: #6d28d9;   /* hover del acento */
+  --color-acento-vivo: #8b5cf6;     /* detalles, íconos de acento */
+  --color-acento-tinte: #f5f3ff;    /* fondo tintado */
+  --color-acento-tinte-2: #ede9fe;  /* fondo tintado más presente */
+  --color-acento-suave: #ddd6fe;    /* borde del tinte */
+
+  /* Semánticos: sólido / texto-fuerte / tinte / tinte-2 / borde-suave */
+  --color-peligro: #dc2626;        --color-peligro-fuerte: #b91c1c;
+  --color-peligro-tinte: #fef2f2;  --color-peligro-tinte-2: #fee2e2;  --color-peligro-suave: #fecaca;
+  --color-alerta: #d97706;         --color-alerta-fuerte: #b45309;
+  --color-alerta-tinte: #fffbeb;   --color-alerta-tinte-2: #fef3c7;   --color-alerta-suave: #fde68a;
+  --color-exito: #059669;          --color-exito-fuerte: #047857;
+  --color-exito-tinte: #ecfdf5;    --color-exito-tinte-2: #d1fae5;    --color-exito-suave: #a7f3d0;
+  --color-info: #2563eb;           --color-info-fuerte: #1d4ed8;
+  --color-info-tinte: #eff6ff;     --color-info-tinte-2: #dbeafe;     --color-info-suave: #bfdbfe;
+}
+
+/* 🌗 El MODO OSCURO ya no vive acá: es parte del template (src/temas/meiti/tema.css, bloque
+   [data-tema="meiti"][data-modo="oscuro"]). Este archivo no define valores de look. */
+
+/* La transición se aplica al cambiar, no siempre: sin esto, cada hover repinta con retardo. */
+:root[data-modo="cambiando"] *,
+:root[data-modo="cambiando"] *::before,
+:root[data-modo="cambiando"] *::after {
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+/* 🩹 [SCROLLBAR TEMÁTICA 2026-08-01] BUG REAL: los scrollbars dentro de cualquier app generada
+   salían con el estilo crudo del navegador (gris genérico) porque nada los estilaba — Gemini
+   nunca se acuerda de hacerlo (ni debería tener que, mismo criterio que el AppShell/safe-area:
+   "la IA nunca lo escribe"). ".meiti-scroll-tema" se aplica en DOS lugares (EnvoltorioAppMulti-
+   Pagina en MotorUI.jsx, para el scroll de página; y el wrapper raíz de SandboxRuntimeApp.jsx,
+   para cualquier scroll propio que un molde cree — ej. una tabla ancha con overflow-x) — cada uno
+   fija sus propias variables CSS con los colores reales del tema de ESA app, así que un scrollbar
+   dentro de un iframe sandboxeado (documento separado, pero mismo index.css) se ve igual de
+   temático que el de la página. El descendiente "::-webkit-scrollbar" (con espacio, no el propio
+   selector) es a propósito: hace que CUALQUIER hijo scrolleable adentro herede el estilo, sin que
+   Gemini tenga que agregar una clase a mano en cada tabla/lista que decida hacer scrolleable. */
+.meiti-scroll-tema {
+  scrollbar-width: thin;
+  scrollbar-color: var(--meiti-scroll-thumb, #64748b80) var(--meiti-scroll-track, transparent);
+}
+.meiti-scroll-tema ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.meiti-scroll-tema ::-webkit-scrollbar-track {
+  background: var(--meiti-scroll-track, transparent);
+}
+.meiti-scroll-tema ::-webkit-scrollbar-thumb {
+  background: var(--meiti-scroll-thumb, #64748b80);
+  border-radius: 9999px;
+}
+.meiti-scroll-tema ::-webkit-scrollbar-thumb:hover {
+  background: var(--meiti-scroll-thumb-hover, var(--meiti-scroll-thumb, #64748b80));
+}
+
+/* 📜 [2026-08-26] ".custom-scrollbar" (21 usos, todos en paneles de Core) tenía su propio gris
+   #1e293b y un cian #06b6d4 de hover que no son de ninguna paleta de MEITI — invisibles sobre
+   oscuro y ajenos al tema. Se queda como alias sin color propio: hereda la regla universal, que
+   se esconde sola y jala del template. Un scroll se ve igual en todo el producto. */
+
+/* 🎨 [SCROLL FINO GLOBAL 2026-08-12, pedido explícito del usuario: "todo tiene escroll sin
+   estilizar"] Arrancó como ".chat-scroll-fino" solo para los 5 contenedores de mensajes del chat
+   unificado — el usuario pidió generalizarlo a TODO Core, wizard y páginas públicas, no cazar
+   className por className. Se sube a regla global sobre <html> — scrollbar-width/scrollbar-color
+   son propiedades que HEREDAN en CSS, así que definirlas una vez ahí ya cubre cualquier
+   contenedor con overflow de todo el sitio (Firefox). Para Chrome/Edge, "*::-webkit-scrollbar"
+   universal cumple el mismo rol (esos pseudo-elementos no heredan, hace falta el selector
+   universal). ".chat-scroll-fino" queda como alias explícito (mismos valores) para quien prefiera
+   marcarlo a mano — ya no hace falta, pero no rompe nada dejarlo.
+   🔒 Las apps GENERADAS por MEITI no dependen de esto — tienen su propio mecanismo ya fino y
+   theme-aware, ".meiti-scroll-tema" (ver más abajo), con más especificidad (selector de clase)
+   que esta regla universal — sigue ganando ahí, esta regla nunca lo pisa. */
+/* 📜 [SCROLLBARS 2026-08-26, pedido del usuario: "que solo se muestren si les pasas el mouse
+   encima; en teléfono que se muestren cuando mueves la pantalla y se escondan cuando está quieta;
+   que arranquen escondidos en los dos"] La barra de scroll pasa a ser lo que es: una ayuda que
+   aparece cuando hace falta, no un elemento permanente del dibujo. Reglas:
+     · arranca INVISIBLE (thumb transparente) en teléfono y en PC;
+     · aparece al pasar el mouse por encima del contenedor que scrollea (PC);
+     · aparece mientras la pantalla se mueve y se va sola al quedarse quieta (teléfono y PC) —
+       eso lo marca "data-scrolleando" en el <html>, ver src/temas/scrollVivo.js.
+   El COLOR no está acá: es look y vive en el template (--tema-scroll). El ancho sí es estructura.
+   El truco del borde transparente con "background-clip: content-box" deja la barra fina (4px de
+   pintura) pero con 8px de zona agarrable con el mouse, que es lo que hace que se pueda usar. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s ease;
+}
+/* Aparecer: con el mouse encima, o mientras algo se está moviendo. */
+*:hover::-webkit-scrollbar-thumb,
+html[data-scrolleando] *::-webkit-scrollbar-thumb {
+  background: var(--tema-scroll, rgb(15 23 42 / 0.28));
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--tema-scroll-activo, rgb(15 23 42 / 0.45));
+  background-clip: content-box;
+}
+/* Firefox no tiene pseudo-elementos de scrollbar, pero sí acepta scrollbar-color por elemento. */
+*:hover {
+  scrollbar-color: var(--tema-scroll, rgb(15 23 42 / 0.28)) transparent;
+}
+html[data-scrolleando],
+html[data-scrolleando] * {
+  scrollbar-color: var(--tema-scroll, rgb(15 23 42 / 0.28)) transparent;
+}
+/* 🚫 Nadie quiere una barra encima del teclado ni de una tarjeta: los contenedores que marcan
+   "sin barra" siguen sin ella. */
+.sin-scrollbar::-webkit-scrollbar { display: none; }
+.sin-scrollbar { scrollbar-width: none; }
+
+/* Alias histórico: ya no define color propio — hereda la regla global de arriba, que es la que
+   sabe esconderse y la que jala del template. */
+.chat-scroll-fino {
+  scrollbar-width: thin;
+}
+/* Sin reglas propias de webkit: las de arriba (universales) ya lo cubren, y son las que se
+   esconden y las que jalan el color del template. Tenerlas repetidas acá era justo lo que dejaba
+   este scroll siempre visible y con su propio gris. */
+
+/* [2026-09-30] /wizard-bg.jpg se borró de public/: llevaba desde el 2026-08-18 sin usarse y el
+   dueño confirmó que no vuelve. ".wizard-bg" queda como clase del fondo común de abajo. */
+/* 🏛️ [TEMPLATES 2026-08-26] Los fondos decorativos JALAN del template — antes eran dos imágenes
+   (wizard-bg.jpg, meiti-bg-minimal.png) con background-color #ffffff fijo, que solo funcionaban
+   sobre blanco y dejaban el modo oscuro a parches. Ahora cada template define su fondo y su gesto
+   (--tema-fondo-pagina, --tema-resplandor) para los dos modos; un template futuro puede traer otro
+   gesto, o "none". */
+.wizard-bg,
+.page-bg,
+.fondo-meiti {
+  background-color: var(--tema-fondo-pagina, #ffffff);
+  background-image: var(--tema-resplandor, none);
+  background-repeat: no-repeat;
+}
+
+.page-bg { pointer-events: none; }
+
+
+

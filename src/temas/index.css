@@ -1,0 +1,5 @@
+/* 🏛️ [TEMPLATES DEL PORTAL 2026-08-26] Un import por template. Agregar uno nuevo = crear su
+   carpeta (src/temas/<id>/tema.css con el esqueleto completo de variables) y sumar su línea acá
+   + su ficha en index.js. El <html data-tema="..."> decide cuál manda; como cada template declara
+   sus variables bajo su propio [data-tema], pueden convivir todos cargados sin pisarse. */
+@import "./meiti/tema.css";

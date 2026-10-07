@@ -1,0 +1,151 @@
+/* ============================================================================
+   🏛️ TEMPLATE "MEITI" — el oficial. [2026-08-26]
+   ============================================================================
+   Pedido del usuario, textual: "escribes el template y vas clase por clase declarando las
+   variables que jalan el template... si luego queremos ponerle 5 templates que el usuario elija,
+   ya solo agregar template X con su carpeta y todas sus clases, propiedades, estilos, imágenes,
+   íconos, definiciones. Estás haciendo todo en pedazos y eso no es un sistema."
+
+   Tenía razón. Este archivo ES el template: TODAS las decisiones de look del portal viven acá,
+   en sus dos modos. Las clases del portal (bg-superficie, text-texto-suave, shadow-sm,
+   rounded-2xl...) no traen valores propios — jalan de estas variables. El contrato:
+
+     · ESTRUCTURA (layout, tamaños, comportamiento)  -> vive en los componentes y estiloMeiti.css
+     · LOOK (color, sombra, radio, fondo, tipografía) -> vive ACÁ, y en ningún otro lado
+
+   Agregar un template nuevo = crear src/temas/<id>/tema.css con este mismo esqueleto de
+   variables bajo [data-tema="<id>"], sumar su import en src/temas/index.css y su ficha en
+   src/temas/index.js. Nada más se toca: el atributo data-tema del <html> decide cuál manda.
+
+   Los valores salen del canvas de diseño "Sistema visual MEITI" (2026-08-26) — la página
+   "Fundamentos": fondo #f8fafc con tarjetas blancas, sombra fría de slate (nunca negro puro),
+   bordes finos #e2e8f0, acento violeta 600, grises con una gota de la marca en el modo oscuro.
+   ============================================================================ */
+
+/* ───────────────────────────── MODO CLARO ───────────────────────────── */
+:root[data-tema="meiti"] {
+  /* Superficies y rellenos */
+  --color-superficie: #ffffff;
+  --color-fondo: #f8fafc;
+  --color-relleno: #f1f5f9;
+  --color-relleno-fuerte: #e2e8f0;
+  /* "inverso" = bloque oscuro CONSTANTE: terminal, consola, bitácora, chip mono. Sus 47 usos en
+     el portal van siempre con texto claro encima (text-white, emerald-300...), así que NO se
+     voltea con el modo — de noche solo baja medio escalón para leerse como pozo sobre la
+     superficie oscura. Voltearlo fue un bug real: terminales con texto verde sobre fondo claro. */
+  --color-inverso: #0f172a;
+
+  /* Texto */
+  --color-texto: #0f172a;
+  --color-texto-medio: #334155;
+  --color-texto-suave: #64748b;
+  --color-texto-tenue: #94a3b8;
+  --color-sobre-acento: #ffffff;
+
+  /* Bordes */
+  --color-borde: #cbd5e1;
+  --color-borde-suave: #e2e8f0;
+  --color-borde-fuerte: #94a3b8;
+
+  /* Acento de marca */
+  --color-acento: #7c3aed;
+  --color-acento-fuerte: #6d28d9;
+  --color-acento-vivo: #8b5cf6;
+  --color-acento-tinte: #f5f3ff;
+  --color-acento-tinte-2: #ede9fe;
+  --color-acento-suave: #ddd6fe;
+
+  /* Semánticos: sólido / fuerte / tinte / tinte-2 / suave(borde) */
+  --color-peligro: #dc2626;        --color-peligro-fuerte: #b91c1c;
+  --color-peligro-tinte: #fef2f2;  --color-peligro-tinte-2: #fee2e2;  --color-peligro-suave: #fecaca;
+  --color-alerta: #d97706;         --color-alerta-fuerte: #b45309;
+  --color-alerta-tinte: #fffbeb;   --color-alerta-tinte-2: #fef3c7;   --color-alerta-suave: #fde68a;
+  --color-exito: #059669;          --color-exito-fuerte: #047857;
+  --color-exito-tinte: #ecfdf5;    --color-exito-tinte-2: #d1fae5;    --color-exito-suave: #a7f3d0;
+  --color-info: #2563eb;           --color-info-fuerte: #1d4ed8;
+  --color-info-tinte: #eff6ff;     --color-info-tinte-2: #dbeafe;     --color-info-suave: #bfdbfe;
+
+  /* Sombra: FRÍA, del tono del texto — nunca negro puro. Es la del canvas. Tailwind pinta todas
+     sus sombras con --tw-shadow-color, así que esta línea gobierna shadow-sm/md/lg/xl del portal
+     entero de una sola vez. */
+  --tw-shadow-color: rgb(15 23 42 / 0.07);
+
+  /* Fondo decorativo de página: el gesto MEITI (resplandor violeta subiendo desde abajo), antes
+     dos imágenes JPG/PNG que solo funcionaban sobre blanco. Ahora es CSS del template: cada modo
+     trae el suyo, y un template futuro puede traer otro gesto (u ninguno: "none"). */
+  --tema-fondo-pagina: var(--color-fondo);
+  --tema-resplandor: radial-gradient(85% 55% at 50% 100%, rgb(124 58 237 / 0.07), transparent 70%);
+
+  /* 📜 [SCROLLBARS 2026-08-26, pedido del usuario: "los scrolls no tienen los estilos definidos en
+     el tema, están muy anchos y muy claros para modo oscuro"] El color de la barra de scroll es una
+     decisión de look, así que vive acá como cualquier otra. Antes estaba clavado en #cbd5e1 dentro
+     de index.css — el último hex de look que quedaba fuera del template. */
+  --tema-scroll: rgb(15 23 42 / 0.28);
+  --tema-scroll-activo: rgb(15 23 42 / 0.45);
+
+  /* 🎴 [CARTELES DE LA VITRINA 2026-08-26] El fondo de los tres carteles de "hecho con MEITI".
+     Eran tres JPG oscuros con el texto quemado adentro: no cambiaban con el modo, no se traducían
+     y estaban en voseo. Ahora se dibujan, y su fondo es una decisión del template como cualquier
+     otra: de día un tinte suave de la marca, de noche el violeta profundo de siempre. */
+  --tema-cartel: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  --tema-cartel-borde: rgb(124 58 237 / 0.18);
+
+  /* El navegador pinta scrollbars y controles nativos del modo correcto. */
+  color-scheme: light;
+}
+
+/* ───────────────────────────── MODO OSCURO ──────────────────────────── */
+/* Los grises llevan una gota del violeta de marca: es lo que hace que el oscuro se sienta MEITI
+   y no un dark mode de plantilla. El acento sube un paso (600 -> 500) para leerse sobre oscuro;
+   "sobre-acento" sigue blanco porque su rol lo exige. Los colores de DATOS (pink de categorías,
+   los meiti-* del Pentágono) no están acá a propósito: un dato se ve igual de día y de noche. */
+:root[data-tema="meiti"][data-modo="oscuro"] {
+  --color-superficie: #14161f;
+  --color-fondo: #0b0d13;
+  --color-relleno: #1b1e2a;
+  --color-relleno-fuerte: #262a38;
+  --color-inverso: #0a0c12;
+
+  --color-texto: #f1f3f8;
+  --color-texto-medio: #c6cddc;
+  --color-texto-suave: #97a0b5;
+  --color-texto-tenue: #687083;
+  --color-sobre-acento: #ffffff;
+
+  --color-borde: #2e3342;
+  --color-borde-suave: #232733;
+  --color-borde-fuerte: #454c5f;
+
+  --color-acento: #8b5cf6;
+  --color-acento-fuerte: #a78bfa;
+  --color-acento-vivo: #a78bfa;
+  --color-acento-tinte: #221b3a;
+  --color-acento-tinte-2: #2b2249;
+  --color-acento-suave: #43356d;
+
+  --color-peligro: #ef4444;        --color-peligro-fuerte: #fca5a5;
+  --color-peligro-tinte: #2a1417;  --color-peligro-tinte-2: #3a1a1e;  --color-peligro-suave: #5b2328;
+  --color-alerta: #f59e0b;         --color-alerta-fuerte: #fcd34d;
+  --color-alerta-tinte: #2a1f0e;   --color-alerta-tinte-2: #3a2a12;   --color-alerta-suave: #5c4116;
+  --color-exito: #10b981;          --color-exito-fuerte: #6ee7b7;
+  --color-exito-tinte: #0e2620;    --color-exito-tinte-2: #123329;    --color-exito-suave: #1d5442;
+  --color-info: #3b82f6;           --color-info-fuerte: #93c5fd;
+  --color-info-tinte: #101c33;     --color-info-tinte-2: #152544;     --color-info-suave: #24406b;
+
+  /* Sobre oscuro la sombra casi no se ve: lo que separa es el borde. Se baja a un velo mínimo. */
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+
+  --tema-fondo-pagina: var(--color-fondo);
+  --tema-resplandor: radial-gradient(90% 55% at 50% 100%, rgb(124 58 237 / 0.14), transparent 72%);
+
+  /* Sobre oscuro, un gris claro se lee como una franja encendida: la barra va tenue y sube al pasar
+     el mouse. Es lo contrario del claro, y por eso vive en el template y no en una regla suelta. */
+  --tema-scroll: rgb(241 243 248 / 0.20);
+  --tema-scroll-activo: rgb(241 243 248 / 0.38);
+
+  /* El mismo violeta profundo que tenían los JPG originales, ahora como gradiente del template. */
+  --tema-cartel: linear-gradient(135deg, #1b1230 0%, #241634 55%, #14101f 100%);
+  --tema-cartel-borde: rgb(167 139 250 / 0.22);
+
+  color-scheme: dark;
+}

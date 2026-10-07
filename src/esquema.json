@@ -1,0 +1,111 @@
+{
+  "requiere_login": true,
+  "tema": {
+    "colorPrimario": "#2563EB",
+    "colorSecundario": "#059669",
+    "fondo": "#F8FAFC",
+    "superficie": "#FFFFFF",
+    "texto": "#0F172A"
+  },
+  "navegacion": {
+    "tipo": "tabs_inferior"
+  },
+  "paginas": [
+    {
+      "id": "inicio",
+      "titulo": "Inicio",
+      "icono": "fa-house",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_DashboardResumen",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Panel principal con resumen de tareas vencidas, entregas de la semana y porcentaje de avance de cada proyecto"
+    },
+    {
+      "id": "tablero",
+      "titulo": "Tablero",
+      "icono": "fa-file-lines",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_TableroKanban",
+          "col_span": 12
+        },
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_SemillaColumnas",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Vista visual de tareas organizadas en columnas de estado con filtros por responsable y etiqueta"
+    },
+    {
+      "id": "detalle_tarjeta",
+      "titulo": "Detalle",
+      "icono": "fa-file-lines",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_DetalleTarjeta",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Vista completa de una tarea con descripción, checklist interactivo, nivel de prioridad y registro de comentarios"
+    },
+    {
+      "id": "proyectos",
+      "titulo": "Proyectos",
+      "icono": "fa-briefcase",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_GestorProyectos",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Catálogo para crear, editar, asignar color identificador y archivar proyectos del equipo"
+    },
+    {
+      "id": "equipo",
+      "titulo": "Equipo",
+      "icono": "fa-users",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_DirectorioEquipo",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Directorio de miembros con nombre, rol asignado y total de tareas abiertas"
+    },
+    {
+      "id": "configuracion",
+      "titulo": "Configuración",
+      "icono": "fa-gear",
+      "rol": "admin",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__Configuracion",
+          "col_span": 12
+        },
+        {
+          "tipo": "TablerosNorte_muugzt8s__PanelRolesPermisos",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Vista mensual con las tarjetas ubicadas según su fecha límite de entrega"
+    },
+    {
+      "id": "calendario",
+      "titulo": "Calendario",
+      "icono": "fa-calendar-days",
+      "componentes": [
+        {
+          "tipo": "TablerosNorte_muugzt8s__EN_CalendarioTarjetas",
+          "col_span": 12
+        }
+      ],
+      "descripcion": "Vista mensual con las tarjetas ubicadas según su fecha límite de entrega"
+    }
+  ],
+  "estilo_layout": "app",
+  "es_industrial": false,
+  "estilo_visual": "meiti"
+}
