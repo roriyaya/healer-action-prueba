@@ -28,6 +28,8 @@ jobs:
         run: npm run rebuild:sqlite
       - name: Generar el instalador de este sistema operativo
         run: npx electron-builder --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
       - name: Subir instaladores como artifact
         uses: actions/upload-artifact@v4
         with:
