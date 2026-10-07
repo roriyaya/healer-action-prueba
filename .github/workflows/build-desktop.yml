@@ -1,0 +1,39 @@
+name: Build de instaladores de escritorio
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Instalar dependencias del frontend
+        run: npm install
+      - name: Instalar dependencias del backend local
+        run: npm install --prefix server
+      - name: Compilar el frontend
+        run: npm run build
+      - name: Recompilar sqlite3 para Electron
+        run: npm run rebuild:sqlite
+      - name: Generar el instalador de este sistema operativo
+        run: npx electron-builder --publish never
+      - name: Subir instaladores como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-${{ matrix.os }}
+          path: |
+            dist_electron/**/*.exe
+            dist_electron/**/*.dmg
+            dist_electron/**/*.AppImage
+            dist_electron/**/*.deb
+          if-no-files-found: ignore
