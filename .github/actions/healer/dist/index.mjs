@@ -20027,6 +20027,10 @@ async function main() {
   const port = puertoTexto ? Number(puertoTexto) : void 0;
   const failOn = entrada("fail-on", "HEALER_FAIL_ON") || "unresolved";
   const aiLevel = entrada("ai-level", "HEALER_AI_LEVEL") || "pro";
+  if (!apiKey) {
+    import_core.default.setFailed('Falta la API key de Healer. Gu\xE1rdala en el repo como secreto (Settings \u2192 Secrets and variables \u2192 Actions, por ejemplo HEALER_API_KEY) y p\xE1sala en "api-key". Si el workflow corre desde el fork de otra persona, GitHub no le entrega los secretos.');
+    return;
+  }
   if (!["free", "pro"].includes(aiLevel)) {
     import_core.default.setFailed(`"ai-level" tiene que ser "free" o "pro" (vino "${aiLevel}").`);
     return;
