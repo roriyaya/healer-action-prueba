@@ -1,5 +1,5 @@
 # Prueba de la GitHub Action de Healer contra GitHub de verdad (2026-10-07).
-# La Action vive en este mismo repo (.github/actions/healer) para probarla sin publicarla.
+# Usa la Action publicada (meiti-dev/healer-action@v1).
 name: Healer
 on: [push, workflow_dispatch]
 
@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - id: healer
-        uses: ./.github/actions/healer
+        uses: meiti-dev/healer-action@v1
         with:
           api-key: ${{ secrets.HEALER_API_KEY }}
           ai-level: free
