@@ -13,5 +13,7 @@ jobs:
         with:
           api-key: ${{ secrets.HEALER_API_KEY }}
           ai-level: free
+          # La organización de pruebas está en el plan Free (1 app protegida), ya usada por esta app.
+          app-id: e2e-roto-ts
           path: .
       - run: echo "status=${{ steps.healer.outputs.status }} reparaciones=${{ steps.healer.outputs.repairs-count }} pentagono=${{ steps.healer.outputs.pentagono-score }}"
