@@ -23,6 +23,6 @@ jobs:
       - name: Sincronizar el build con el proyecto nativo
         run: npx cap sync ios
       - name: Instalar Pods (solo si el proyecto usa CocoaPods)
-        run: cd ios/App && if [ -f Podfile ]; then pod install; else echo 'Swift Package Manager: no hace falta pod install'; fi
+        run: cd ios/App && if [ -f Podfile ]; then pod install; else echo 'Swift Package Manager, no hace falta pod install'; fi
       - name: Compilar para simulador, sin firma (solo verifica que compila)
         run: cd ios/App && if [ -f Podfile ]; then DESTINO='-workspace App.xcworkspace'; else DESTINO='-project App.xcodeproj'; fi && xcodebuild $DESTINO -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath build CODE_SIGNING_ALLOWED=NO
